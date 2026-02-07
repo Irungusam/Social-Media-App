@@ -31,7 +31,7 @@ const syncUserCreation = inngest.createFunction(
     };
 
     await User.create(userData);
-  }
+  },
 );
 
 // Inngest function to update user data in database
@@ -48,7 +48,7 @@ const syncUserUpdation = inngest.createFunction(
       profile_picture: image_url,
     };
     await User.findByIdAndUpdate(id, updateUserData);
-  }
+  },
 );
 
 // Inngest function to delete user from database
@@ -59,7 +59,7 @@ const syncUserDeletion = inngest.createFunction(
     const { id } = event.data;
 
     await User.findByIdAndDelete(id);
-  }
+  },
 );
 
 // Ingest function to send Notification when a new connection request is added
@@ -71,7 +71,7 @@ const sendNewConnectionRequestNotification = inngest.createFunction(
 
     await step.run("send-connection-request-email", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id"
+        "from_user_id to_user_id",
       );
       const subject = `New Connection Request`;
       const body = `<div style="font-family: Arial, sans-serif; padding: 20px;">
@@ -93,7 +93,7 @@ const sendNewConnectionRequestNotification = inngest.createFunction(
     await step.sleepUntil("wait-for-24-hours", in24Hours);
     await step.run("send-connection-request-reminder", async () => {
       const connection = await Connection.findById(connectionId).populate(
-        "from_user_id to_user_id"
+        "from_user_id to_user_id",
       );
 
       if (connection.status === "accepted") {
@@ -114,10 +114,15 @@ const sendNewConnectionRequestNotification = inngest.createFunction(
         body,
       });
 
-      return {message: "Reminder sent."}
+      return { message: "Reminder sent." };
     });
-  }
+  },
 );
 
 // Create an empty array where we'll export future Inngest functions
-export const functions = [syncUserCreation, syncUserUpdation, syncUserDeletion, sendNewConnectionRequestNotification];
+export const functions = [
+  syncUserCreation,
+  syncUserUpdation,
+  syncUserDeletion,
+  sendNewConnectionRequestNotification,
+];
