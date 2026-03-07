@@ -33,7 +33,7 @@ const userSlice = createSlice({
   name: "User",
   initialState,
   reducers: {},
-  extraReducers: (bbuilder) => {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchUser.fulfilled, (state, action) => {
         state.value = action.payload;

@@ -13,26 +13,33 @@ const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" },
   { event: "clerk/user.created" },
   async ({ event }) => {
-    const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
-    let username = email_addresses[0].email_addresses.split("@")[0];
+    try {
+      const { id, first_name, last_name, email_addresses, image_url } =
+        event.data;
 
-    // Check availability of username
-    const user = await User.findOne({ username });
+      console.log("Creating user with id:", id);
 
-    if (user) {
-      username = user + Math.floor(Math.random() * 10000);
+      let username = email_addresses[0].email_address.split("@")[0];
+      const existingUser = await User.findOne({ username });
+      if (existingUser) {
+        username = username + Math.floor(Math.random() * 10000);
+      }
+
+      const userData = {
+        _id: id,
+        email: email_addresses[0].email_address,
+        full_name: first_name + " " + last_name,
+        profile_picture: image_url,
+        username,
+      };
+
+      console.log("Saving user:", userData);
+      const newUser = await User.create(userData);
+      console.log("User saved:", newUser);
+    } catch (error) {
+      console.error("Error creating user:", error.message);
+      throw error; // rethrow so Inngest marks it as failed
     }
-
-    const userData = {
-      _id: id,
-      email: email_addresses[0].email_addresses,
-      full_name: first_name + " " + last_name,
-      profile_picture: image_url,
-      username,
-    };
-
-    await User.create(userData);
   },
 );
 
@@ -45,7 +52,7 @@ const syncUserUpdation = inngest.createFunction(
       event.data;
 
     const updateUserData = {
-      email: email_addresses[0].email_addresses,
+      email: email_addresses[0].email_address,
       full_name: first_name + " " + last_name,
       profile_picture: image_url,
     };
@@ -180,5 +187,5 @@ export const functions = [
   syncUserDeletion,
   sendNewConnectionRequestNotification,
   deleteStory,
-  sendNotificationOfUnseenMessages
+  sendNotificationOfUnseenMessages,
 ];
