@@ -47,14 +47,14 @@ export const UpdateUserData = async (req, res) => {
     const cover = req.files.cover && req.files.cover[0];
 
     if (profile) {
-      const buffer = fs.readFileSync(profile.path);
-      const response = await imagekit.upload({
-        file: buffer,
+      const response = await imagekit.files.upload({
+        file: fs.createReadStream(profile.path),
         fileName: profile.originalname,
       });
 
-      const url = imagekit.url({
-        path: response.filePath,
+      const url = imagekit.helper.buildSrc({
+        urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+        src: response.filePath,
         transformation: [
           { quality: "auto" },
           { format: "webp" },
@@ -65,14 +65,14 @@ export const UpdateUserData = async (req, res) => {
     }
 
     if (cover) {
-      const buffer = fs.readFileSync(cover.path);
-      const response = await imagekit.upload({
-        file: buffer,
+      const response = await imagekit.files.upload({
+        file: fs.createReadStream(cover.path),
         fileName: cover.originalname,
       });
 
-      const url = imagekit.url({
-        path: response.filePath,
+      const url = imagekit.helper.buildSrc({
+        urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+        src: response.filePath,
         transformation: [
           { quality: "auto" },
           { format: "webp" },
