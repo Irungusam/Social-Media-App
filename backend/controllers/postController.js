@@ -1,4 +1,5 @@
 import imagekit from "../configs/imageKit.js";
+import fs from "fs";
 import Post from "../models/Post.js";
 import User from "../models/User.js";
 
@@ -14,15 +15,15 @@ export const addPost = async (req, res) => {
     if (images.length) {
       image_urls = await Promise.all(
         images.map(async (image) => {
-          const fileBuffer = fs.readFileSync(image.path);
-          const response = await imagekit.upload({
-            file: buffer,
+          const response = await imagekit.files.upload({
+            file: fs.createReadStream(image.path),
             fileName: image.originalname,
             folder: "posts",
           });
 
-          const url = imagekit.url({
-            path: response.filePath,
+          const url = imagekit.helper.buildSrc({
+            urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT,
+            src: response.filePath,
             transformation: [
               { quality: "auto" },
               { format: "webp" },
@@ -30,7 +31,7 @@ export const addPost = async (req, res) => {
             ],
           });
           return url;
-        })
+        }),
       );
     }
 
@@ -55,9 +56,9 @@ export const getFeedPosts = async (req, res) => {
 
     // User connections and following
     const userIds = [userId, ...user.connections, ...user.following];
-    const posts = (
-      await Post.find({ user: { $in: userIds } }).populate("user")
-    ).toSorted({ createdAt: -1 });
+    const posts = await Post.find({ user: { $in: userIds } })
+      .populate("user")
+      .sort({ createdAt: -1 });
 
     res.json({ success: true, posts });
   } catch (error) {
