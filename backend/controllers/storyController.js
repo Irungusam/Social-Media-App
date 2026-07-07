@@ -14,9 +14,8 @@ export const addUserStory = async (req, res) => {
 
     // upload media to imagekit
     if (media_type === "image" || media_type === "video") {
-      const fileBuffer = fs.readFileSync(media.path);
-      const response = await imagekit.upload({
-        file: fileBuffer,
+      const response = await imagekit.files.upload({
+        file: fs.createReadStream(media.path),
         fileName: media.originalname,
       });
       media_url = response.url;
