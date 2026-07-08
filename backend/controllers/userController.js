@@ -277,7 +277,7 @@ export const acceptConnectionRequest = async (req, res) => {
     user.connections.push(id);
     await user.save();
 
-    const toUser = await User.findById(Id);
+    const toUser = await User.findById(id); // ✅ fixed: was `Id`
     toUser.connections.push(userId);
     await toUser.save();
 
